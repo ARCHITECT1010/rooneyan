@@ -1,0 +1,615 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Architect 10 — Multilingual Dubbing</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --ink:#12141c;
+    --panel:#181b26;
+    --panel-2:#1f2330;
+    --line:#2c3142;
+    --paper:#f1efe9;
+    --slate:#8991a8;
+    --amber:#e8a33d;
+    --amber-dim:#5c4622;
+    --green:#5fae85;
+    --red:#c4685a;
+    --red-dim:#3a2320;
+  }
+  *{box-sizing:border-box;}
+  html,body{margin:0;padding:0;}
+  body{
+    background:var(--ink);
+    color:var(--paper);
+    font-family:'Inter',sans-serif;
+    min-height:100vh;
+    padding:48px 20px 80px;
+    display:flex;
+    justify-content:center;
+  }
+  .app{width:100%;max-width:720px;}
+
+  /* Header */
+  header.brand{
+    display:flex;
+    align-items:center;
+    gap:14px;
+    margin-bottom:32px;
+  }
+  .mark{width:40px;height:40px;flex:none;}
+  .brandtext h1{
+    font-family:'Space Grotesk',sans-serif;
+    font-weight:700;
+    font-size:22px;
+    letter-spacing:-0.01em;
+    margin:0;
+    color:var(--paper);
+  }
+  .brandtext p{margin:2px 0 0;font-size:13px;color:var(--slate);}
+
+  /* Panel */
+  .panel{
+    background:var(--panel);
+    border:1px solid var(--line);
+    border-radius:14px;
+    padding:32px;
+    margin-bottom:20px;
+  }
+  .panel.compact{padding:20px 24px;}
+  .step-label{
+    font-family:'Space Grotesk',sans-serif;
+    font-size:17px;
+    font-weight:600;
+    margin:0 0 6px;
+    color:var(--paper);
+  }
+  .step-hint{font-size:13.5px;color:var(--slate);margin:0 0 20px;line-height:1.5;}
+
+  /* Row / input */
+  .url-row{display:flex;gap:10px;align-items:center;}
+  input[type=text]{
+    flex:1;
+    background:var(--panel-2);
+    border:1px solid var(--line);
+    border-radius:9px;
+    padding:13px 14px;
+    color:var(--paper);
+    font-size:14.5px;
+    font-family:'Inter',sans-serif;
+    outline:none;
+    transition:border-color .15s ease;
+  }
+  input[type=text]:focus{border-color:var(--amber);}
+  input[type=text]::placeholder{color:#5d6377;}
+
+  .status-chip{
+    display:inline-flex;
+    align-items:center;
+    gap:7px;
+    padding:6px 12px;
+    border-radius:20px;
+    background:var(--panel-2);
+    border:1px solid var(--line);
+    font-size:12.5px;
+    color:var(--slate);
+    margin-top:14px;
+    white-space:nowrap;
+    transition:all .15s ease;
+  }
+  .status-chip.ok{color:var(--paper);border-color:var(--green);background:rgba(95,174,133,.08);}
+  .status-chip.warn{color:var(--paper);border-color:var(--amber);background:rgba(232,163,61,.08);}
+  .status-chip.err{color:var(--paper);border-color:var(--red);background:rgba(196,104,90,.08);}
+  .status-dot{width:7px;height:7px;border-radius:50%;background:#4b5164;flex:none;}
+  .status-chip.ok .status-dot{background:var(--green);}
+  .status-chip.warn .status-dot{background:var(--amber);}
+  .status-chip.err .status-dot{background:var(--red);}
+
+  .supported-row{display:flex;flex-wrap:wrap;gap:8px;margin-top:16px;}
+  .supported-tag{
+    font-size:11.5px;color:#5d6377;
+    border:1px solid var(--line);
+    padding:4px 9px;border-radius:6px;
+  }
+
+  /* Language grid */
+  .lang-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:10px;}
+  .lang-chip{
+    display:flex;align-items:center;justify-content:space-between;
+    padding:13px 15px;
+    background:var(--panel-2);
+    border:1px solid var(--line);
+    border-radius:10px;
+    cursor:pointer;user-select:none;
+    transition:all .15s ease;
+  }
+  .lang-chip:hover{border-color:#3a4054;}
+  .lang-chip.selected{border-color:var(--amber);background:rgba(232,163,61,.08);}
+  .lang-name{font-size:14px;color:var(--paper);}
+  .lang-native{font-size:11.5px;color:var(--slate);display:block;margin-top:1px;}
+  .check{
+    width:18px;height:18px;flex:none;
+    border-radius:5px;
+    border:1.5px solid var(--line);
+    display:flex;align-items:center;justify-content:center;
+    transition:all .15s ease;
+  }
+  .lang-chip.selected .check{background:var(--amber);border-color:var(--amber);}
+  .check svg{width:11px;height:11px;opacity:0;transition:opacity .1s ease;}
+  .lang-chip.selected .check svg{opacity:1;}
+
+  /* Action row */
+  .action-row{display:flex;align-items:center;justify-content:space-between;margin-top:28px;flex-wrap:wrap;gap:12px;}
+  .go-btn{
+    font-family:'Space Grotesk',sans-serif;
+    font-weight:600;font-size:15px;
+    background:var(--amber);color:#20160a;
+    border:none;border-radius:9px;
+    padding:13px 26px;cursor:pointer;
+    transition:transform .1s ease, background .15s ease;
+  }
+  .go-btn:hover{background:#f0b45c;}
+  .go-btn:active{transform:scale(.98);}
+  .go-btn:disabled{background:#3a3d47;color:#767a87;cursor:not-allowed;}
+  .small-btn{
+    font-size:12.5px;font-family:'Space Grotesk',sans-serif;font-weight:600;
+    color:var(--paper);background:transparent;
+    border:1px solid var(--line);border-radius:7px;
+    padding:9px 14px;cursor:pointer;white-space:nowrap;
+    transition:border-color .15s ease;
+  }
+  .small-btn:hover{border-color:var(--amber);}
+
+  /* Shared pipeline stages */
+  .pipeline{display:none;}
+  .pipeline.show{display:block;}
+  .stage{display:flex;align-items:center;gap:14px;padding:11px 0;border-bottom:1px solid var(--line);}
+  .stage:last-child{border-bottom:none;}
+  .stage-icon{
+    width:22px;height:22px;flex:none;
+    border-radius:50%;border:1.5px solid var(--line);
+    display:flex;align-items:center;justify-content:center;
+  }
+  .stage-icon svg{width:11px;height:11px;}
+  .stage.done .stage-icon{border-color:var(--green);background:rgba(95,174,133,.12);}
+  .stage.active .stage-icon{border-color:var(--amber);}
+  .stage.failed .stage-icon{border-color:var(--red);background:rgba(196,104,90,.12);}
+  .stage-name{font-size:14px;color:var(--slate);}
+  .stage.done .stage-name, .stage.active .stage-name, .stage.failed .stage-name{color:var(--paper);}
+  .spin{width:11px;height:11px;border:2px solid var(--amber-dim);border-top-color:var(--amber);border-radius:50%;animation:spin .7s linear infinite;}
+  @keyframes spin{to{transform:rotate(360deg);}}
+
+  .job-error{
+    margin-top:14px;
+    padding:12px 14px;
+    background:var(--red-dim);
+    border:1px solid var(--red);
+    border-radius:9px;
+    font-size:13px;
+    color:var(--paper);
+    display:none;
+    white-space:pre-wrap;
+  }
+  .job-error.show{display:block;}
+
+  /* Results / per-language cards */
+  .results{display:none;}
+  .results.show{display:block;}
+  .result-card{
+    display:flex;align-items:center;gap:14px;
+    padding:14px 16px;
+    background:var(--panel-2);
+    border:1px solid var(--line);
+    border-radius:10px;margin-bottom:10px;
+  }
+  .result-card.failed{border-color:var(--red);}
+  .wave{width:46px;height:32px;flex:none;}
+  .wave rect{fill:var(--amber);}
+  .result-card.failed .wave rect{fill:var(--red);}
+  .rc-body{flex:1;min-width:0;}
+  .rc-title{font-size:14px;color:var(--paper);font-weight:500;}
+  .rc-sub{font-size:12px;color:var(--slate);margin-top:2px;}
+  .rc-sub.err{color:var(--red);}
+  a.dl-btn{
+    font-size:12.5px;font-family:'Space Grotesk',sans-serif;font-weight:600;
+    color:var(--paper);background:transparent;
+    border:1px solid var(--line);border-radius:7px;
+    padding:8px 14px;cursor:pointer;white-space:nowrap;
+    text-decoration:none;display:inline-block;
+    transition:border-color .15s ease;
+  }
+  a.dl-btn:hover{border-color:var(--amber);}
+  .rc-spin{width:16px;height:16px;flex:none;border:2px solid var(--amber-dim);border-top-color:var(--amber);border-radius:50%;animation:spin .7s linear infinite;}
+
+  .toast{
+    position:fixed;bottom:26px;left:50%;
+    transform:translateX(-50%) translateY(20px);
+    background:var(--panel-2);border:1px solid var(--line);color:var(--paper);
+    padding:12px 18px;border-radius:9px;font-size:13px;
+    max-width:min(90vw,420px);text-align:center;
+    opacity:0;pointer-events:none;transition:all .25s ease;
+    box-shadow:0 8px 24px rgba(0,0,0,.35);
+  }
+  .toast.show{opacity:1;transform:translateX(-50%) translateY(0);}
+
+  footer{text-align:center;margin-top:36px;font-size:12px;color:#565c70;}
+
+  @media (max-width:480px){
+    .lang-grid{grid-template-columns:1fr;}
+    .panel{padding:22px;}
+  }
+</style>
+</head>
+<body>
+<div class="app">
+
+  <header class="brand">
+    <svg class="mark" viewBox="0 0 40 40" fill="none">
+      <rect x="1" y="1" width="38" height="38" rx="9" stroke="#e8a33d" stroke-width="1.5"/>
+      <path d="M11 14v12M17 10v20M23 10v20M29 14v12" stroke="#e8a33d" stroke-width="2.2" stroke-linecap="round"/>
+    </svg>
+    <div class="brandtext">
+      <h1>Architect 10</h1>
+      <p>Paste a clip, pick your languages, get it dubbed</p>
+    </div>
+  </header>
+
+  <!-- Backend connection -->
+  <div class="panel compact">
+    <p class="step-label">Backend</p>
+    <p class="step-hint">Point this at your running Architect 10 API (defaults to a local server).</p>
+    <div class="url-row">
+      <input type="text" id="apiBaseInput" value="http://localhost:8000" />
+      <button class="small-btn" id="checkBtn">Check</button>
+    </div>
+    <div id="connChip" class="status-chip">
+      <span class="status-dot"></span>
+      <span id="connLabel">Checking…</span>
+    </div>
+  </div>
+
+  <!-- Step 1: link -->
+  <div class="panel">
+    <p class="step-label">1. Drop in a video link</p>
+    <p class="step-hint">Works with links from TikTok, Instagram, Facebook, Dailymotion, and X (Twitter).</p>
+    <div class="url-row">
+      <input type="text" id="urlInput" placeholder="https://www.tiktok.com/@user/video/…" />
+    </div>
+    <div id="platformChip" class="status-chip">
+      <span class="status-dot"></span>
+      <span id="platformLabel">Waiting for a link</span>
+    </div>
+    <div class="supported-row">
+      <span class="supported-tag">TikTok</span>
+      <span class="supported-tag">Instagram</span>
+      <span class="supported-tag">Facebook</span>
+      <span class="supported-tag">Dailymotion</span>
+      <span class="supported-tag">X / Twitter</span>
+    </div>
+  </div>
+
+  <!-- Step 2: languages -->
+  <div class="panel">
+    <p class="step-label">2. Choose dub languages</p>
+    <p class="step-hint">Select as many as you need — each becomes its own exported file.</p>
+    <div class="lang-grid" id="langGrid"></div>
+  </div>
+
+  <!-- Step 3: action -->
+  <div class="panel">
+    <div class="action-row">
+      <button class="go-btn" id="goBtn" disabled>Start dubbing</button>
+      <span class="step-hint" id="goHint" style="margin:0;">Checking backend…</span>
+    </div>
+
+    <div class="pipeline" id="pipeline" style="margin-top:24px;"></div>
+    <div class="job-error" id="jobError"></div>
+  </div>
+
+  <!-- Results -->
+  <div class="panel results" id="resultsPanel">
+    <p class="step-label">Dubbed files</p>
+    <p class="step-hint">Each language updates live as it finishes.</p>
+    <div id="resultsList"></div>
+  </div>
+
+  <footer>&copy; Architect 10. All rights reserved.</footer>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+const LANGUAGES = [
+  {code:'en', name:'English', native:'English'},
+  {code:'es', name:'Spanish', native:'Español'},
+  {code:'pt', name:'Portuguese', native:'Português'},
+  {code:'pt-br', name:'Brazilian Portuguese', native:'Português (BR)'},
+  {code:'fr', name:'French', native:'Français'},
+  {code:'sw', name:'Swahili', native:'Kiswahili'},
+];
+
+const PLATFORMS = [
+  {key:'tiktok', label:'TikTok', test:/tiktok\.com/i},
+  {key:'instagram', label:'Instagram', test:/instagram\.com/i},
+  {key:'facebook', label:'Facebook', test:/(facebook\.com|fb\.watch)/i},
+  {key:'dailymotion', label:'Dailymotion', test:/dailymotion\.com/i},
+  {key:'twitter', label:'X / Twitter', test:/(twitter\.com|x\.com)/i},
+];
+
+// Shared, job-level stages the backend reports before it fans out per language.
+const SHARED_STAGES = [
+  {key:'downloading', label:'Fetching source video'},
+  {key:'extracting_audio', label:'Extracting audio'},
+  {key:'transcribing', label:'Transcribing dialogue'},
+];
+const SHARED_ORDER = ['queued', ...SHARED_STAGES.map(s => s.key)];
+
+const PER_LANG_LABELS = {
+  queued: 'Waiting to start',
+  translating: 'Translating script',
+  synthesizing: 'Synthesizing dubbed voice',
+  muxing: 'Merging into video',
+  done: 'Ready',
+  failed: 'Failed',
+};
+
+const CHECK_ICON = '<svg viewBox="0 0 12 12" fill="none"><path d="M2 6l2.5 2.5L10 3" stroke="#5fae85" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>';
+const CROSS_ICON = '<svg viewBox="0 0 12 12" fill="none"><path d="M3 3l6 6M9 3l-6 6" stroke="#c4685a" stroke-width="1.8" stroke-linecap="round"/></svg>';
+
+// ---------- Language selection ----------
+const langGrid = document.getElementById('langGrid');
+const selected = new Set();
+
+LANGUAGES.forEach(l => {
+  const chip = document.createElement('div');
+  chip.className = 'lang-chip';
+  chip.dataset.code = l.code;
+  chip.innerHTML = `
+    <div>
+      <span class="lang-name">${l.name}</span>
+      <span class="lang-native">${l.native}</span>
+    </div>
+    <div class="check">
+      <svg viewBox="0 0 12 12" fill="none"><path d="M2 6l2.5 2.5L10 3" stroke="#20160a" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>
+    </div>
+  `;
+  chip.addEventListener('click', () => {
+    chip.classList.toggle('selected');
+    if (selected.has(l.code)) selected.delete(l.code); else selected.add(l.code);
+    updateGoState();
+  });
+  langGrid.appendChild(chip);
+});
+
+// ---------- Link input / platform detection ----------
+const urlInput = document.getElementById('urlInput');
+const platformChip = document.getElementById('platformChip');
+const platformLabel = document.getElementById('platformLabel');
+let detectedPlatform = null;
+
+urlInput.addEventListener('input', () => {
+  const val = urlInput.value.trim();
+  detectedPlatform = PLATFORMS.find(p => p.test.test(val)) || null;
+  if (val.length === 0) {
+    platformLabel.textContent = 'Waiting for a link';
+    platformChip.className = 'status-chip';
+  } else if (detectedPlatform) {
+    platformLabel.textContent = 'Detected: ' + detectedPlatform.label;
+    platformChip.className = 'status-chip ok';
+  } else {
+    platformLabel.textContent = "Link not recognized — check it's a full video URL";
+    platformChip.className = 'status-chip warn';
+  }
+  updateGoState();
+});
+
+// ---------- Backend connection ----------
+const apiBaseInput = document.getElementById('apiBaseInput');
+const checkBtn = document.getElementById('checkBtn');
+const connChip = document.getElementById('connChip');
+const connLabel = document.getElementById('connLabel');
+const goHint = document.getElementById('goHint');
+let backendOk = false;
+
+function apiBase() {
+  return apiBaseInput.value.trim().replace(/\/+$/, '');
+}
+
+async function checkBackend() {
+  connChip.className = 'status-chip';
+  connLabel.textContent = 'Checking…';
+  goHint.textContent = 'Checking backend…';
+  try {
+    const res = await fetch(apiBase() + '/languages', {method:'GET'});
+    if (!res.ok) throw new Error('HTTP ' + res.status);
+    await res.json();
+    backendOk = true;
+    connChip.className = 'status-chip ok';
+    connLabel.textContent = 'Connected';
+    goHint.textContent = '';
+  } catch (err) {
+    backendOk = false;
+    connChip.className = 'status-chip err';
+    connLabel.textContent = 'Offline — start the API (uvicorn app.main:app --reload) and check the URL above';
+    goHint.textContent = 'Backend unreachable';
+  }
+  updateGoState();
+}
+
+checkBtn.addEventListener('click', checkBackend);
+apiBaseInput.addEventListener('change', checkBackend);
+checkBackend();
+
+// ---------- Go button state ----------
+const goBtn = document.getElementById('goBtn');
+function updateGoState() {
+  const ready = urlInput.value.trim().length > 0 && detectedPlatform && selected.size > 0 && backendOk;
+  goBtn.disabled = !ready;
+  if (backendOk) {
+    goHint.textContent = ready ? '' : 'Add a link and at least one language';
+  }
+}
+
+// ---------- Toast ----------
+const toast = document.getElementById('toast');
+function showToast(msg) {
+  toast.textContent = msg;
+  toast.classList.add('show');
+  setTimeout(() => toast.classList.remove('show'), 3400);
+}
+
+// ---------- Pipeline run ----------
+const pipelineEl = document.getElementById('pipeline');
+const jobErrorEl = document.getElementById('jobError');
+const resultsPanel = document.getElementById('resultsPanel');
+const resultsList = document.getElementById('resultsList');
+let pollHandle = null;
+
+goBtn.addEventListener('click', startJob);
+
+async function startJob() {
+  goBtn.disabled = true;
+  jobErrorEl.classList.remove('show');
+  jobErrorEl.textContent = '';
+
+  renderSharedStages('queued');
+  pipelineEl.classList.add('show');
+
+  resultsPanel.classList.add('show');
+  const langCodes = [...selected];
+  resultsList.innerHTML = '';
+  langCodes.forEach(code => renderResultCard(code, {stage: 'queued'}));
+
+  let jobId;
+  try {
+    const res = await fetch(apiBase() + '/jobs', {
+      method: 'POST',
+      headers: {'Content-Type': 'application/json'},
+      body: JSON.stringify({url: urlInput.value.trim(), languages: langCodes}),
+    });
+    const body = await res.json().catch(() => ({}));
+    if (!res.ok) {
+      throw new Error(body.detail || ('HTTP ' + res.status));
+    }
+    jobId = body.job_id;
+  } catch (err) {
+    showJobError("Couldn't start the job: " + err.message);
+    goBtn.disabled = false;
+    return;
+  }
+
+  if (pollHandle) clearInterval(pollHandle);
+  pollHandle = setInterval(() => pollJob(jobId), 1500);
+  pollJob(jobId);
+}
+
+function showJobError(msg) {
+  jobErrorEl.textContent = msg;
+  jobErrorEl.classList.add('show');
+}
+
+async function pollJob(jobId) {
+  let job;
+  try {
+    const res = await fetch(apiBase() + '/jobs/' + jobId);
+    if (!res.ok) throw new Error('HTTP ' + res.status);
+    job = await res.json();
+  } catch (err) {
+    clearInterval(pollHandle);
+    showJobError('Lost connection to the backend while checking job status: ' + err.message);
+    goBtn.disabled = false;
+    return;
+  }
+
+  renderSharedStages(job.stage, job.error);
+
+  Object.entries(job.languages).forEach(([code, result]) => {
+    renderResultCard(code, result, jobId);
+  });
+
+  if (job.stage === 'done' || job.stage === 'failed') {
+    clearInterval(pollHandle);
+    pollHandle = null;
+    goBtn.disabled = false;
+    if (job.stage === 'failed' && job.error) {
+      showJobError(job.error);
+    }
+  }
+}
+
+function renderSharedStages(currentStage, jobError) {
+  const idx = SHARED_ORDER.indexOf(currentStage);
+  const passedAll = currentStage === 'done' || currentStage === 'failed';
+
+  pipelineEl.innerHTML = SHARED_STAGES.map((s, i) => {
+    const stagePos = i + 1; // offset for 'queued' at index 0
+    let cls = '';
+    let icon = '<span></span>';
+
+    if (currentStage === 'failed') {
+      // The job-level error is shown separately; here just mark steps that
+      // definitely completed (idx is -1 when stage is 'failed', so nothing
+      // is assumed done unless it was reached before failing).
+      cls = '';
+    } else if (passedAll || stagePos < idx) {
+      cls = 'done';
+      icon = CHECK_ICON;
+    } else if (stagePos === idx) {
+      cls = 'active';
+      icon = '<div class="spin"></div>';
+    }
+
+    return `<div class="stage ${cls}">
+      <div class="stage-icon">${icon}</div>
+      <span class="stage-name">${s.label}</span>
+    </div>`;
+  }).join('');
+}
+
+function renderResultCard(code, result, jobId) {
+  const lang = LANGUAGES.find(l => l.code === code);
+  let card = document.getElementById('rc-' + code);
+  if (!card) {
+    card = document.createElement('div');
+    card.id = 'rc-' + code;
+    card.className = 'result-card';
+    resultsList.appendChild(card);
+  }
+
+  card.classList.toggle('failed', result.stage === 'failed');
+
+  const waveSvg = `<svg class="wave" viewBox="0 0 46 32">
+    ${Array.from({length:11}).map((_,i)=>{
+      const h = 6 + Math.round(Math.abs(Math.sin(i*1.3))*20);
+      return `<rect x="${i*4}" y="${(32-h)/2}" width="2.4" height="${h}" rx="1.2"/>`;
+    }).join('')}
+  </svg>`;
+
+  let actionHtml;
+  if (result.stage === 'done') {
+    actionHtml = `<a class="dl-btn" href="${apiBase()}/jobs/${jobId}/download/${code}" target="_blank" rel="noopener">Download</a>`;
+  } else if (result.stage === 'failed') {
+    actionHtml = `<span class="rc-sub err">Failed</span>`;
+  } else {
+    actionHtml = `<div class="rc-spin"></div>`;
+  }
+
+  const subText = result.stage === 'failed'
+    ? (result.error || 'Something went wrong for this language.')
+    : (lang.native + ' · ' + (PER_LANG_LABELS[result.stage] || result.stage));
+
+  card.innerHTML = `
+    ${waveSvg}
+    <div class="rc-body">
+      <div class="rc-title">${lang.name} dub</div>
+      <div class="rc-sub ${result.stage === 'failed' ? 'err' : ''}">${subText}</div>
+    </div>
+    ${actionHtml}
+  `;
+}
+</script>
+</body>
+</html>
